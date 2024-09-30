@@ -20,6 +20,7 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('test', function () {
         dd(1);
     });
+    
     $router->get('usuarios/{domain_id}', 'UsuarioController@index');
     $router->post('usuarios', 'UsuarioController@store');
     $router->delete('usuarios/{id}', 'UsuarioController@destroy');
@@ -421,11 +422,11 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->get('candidatos/ciudad/{ciudad_id}', 'CandidatoController@getByCiudad');
     $router->put('candidatos/{id}', 'CandidatoController@update');
     $router->delete('candidatos/{id}', 'CandidatoController@destroy');
-    
+
     // Rutas adicionales para datos y filtros
     $router->get('candidatos/filters/data', 'CandidatoController@filtersData');
     $router->get('candidatos/data/create/{domain_id}', 'CandidatoController@dataCreate');
-    
+
     // Ciudades
     $router->get('ciudades', 'CiudadController@index');
     $router->post('ciudades', 'CiudadController@store');
@@ -441,5 +442,4 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     $router->put('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@update');
     $router->delete('informacion_academica/{id}', 'InformacionAcademicaCandidatoController@destroy');
     $router->get('informacion_academica/create/{domain_id}', 'InformacionAcademicaCandidatoController@getDataCreate');
-
 });
