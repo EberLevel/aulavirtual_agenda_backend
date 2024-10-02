@@ -417,10 +417,12 @@ $router->group(['prefix' => 'api/{domain}', 'middleware' => ['validate.domain']]
     //Candidatos
     $router->get('candidatos/domain/{domain_id}', 'CandidatoController@index');
     $router->post('candidatos', 'CandidatoController@store');
-    $router->get('candidatos/{id}', 'CandidatoController@show');
+
     $router->get('getCiudadByCandidato/{id}', 'CandidatoController@getCiudadByCandidato');
     $router->get('candidatos/user/{id}', 'CandidatoController@showByUser');
     $router->get('candidatos/ciudad/{ciudad_id}', 'CandidatoController@getByCiudad');
+    $router->get('candidatos/{id}', 'CandidatoController@show');
+    $router->get('candidatos/ciudad/count/{ciudad_id}', 'CandidatoController@countCandidatosByCiudad');
     $router->put('candidatos/{id}', 'CandidatoController@update');
     $router->delete('candidatos/{id}', 'CandidatoController@destroy');
     
