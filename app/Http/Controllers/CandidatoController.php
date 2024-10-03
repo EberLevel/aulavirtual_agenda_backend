@@ -16,10 +16,13 @@ class CandidatoController extends Controller
     public function index(Request $request, $domain_id)
     {
         // Obtener todos los candidatos solo filtrando por domain_id
-        $candidatos = Candidato::where('domain_id', $domain_id)->get();
-    
+        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department'])
+            ->where('domain_id', $domain_id)
+            ->get();
+        
         return response()->json($candidatos, 200);
     }
+    
     
 
     public function getCiudadByCandidato($id)
