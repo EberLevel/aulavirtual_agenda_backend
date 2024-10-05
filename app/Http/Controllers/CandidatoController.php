@@ -309,11 +309,11 @@ class CandidatoController extends Controller
         // Buscar y eliminar el usuario asociado al candidato
         $user = \App\Models\User::find($candidato->user_id);
         if ($user) {
-            $user->delete();
+            $user->forceDelete();
         }
     
         // Eliminar el candidato
-        $candidato->delete();
+        $candidato->forceDelete();
     
         return response()->json(['message' => 'Candidato y usuario eliminados correctamente'], 204);
     }
