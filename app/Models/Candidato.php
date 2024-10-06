@@ -57,7 +57,6 @@ class Candidato extends Model
     {
         return $this->belongsTo(EstadoCivil::class, 'marital_status_id');
     }
-
     /**
      * Relación con la tabla `education_degree`.
      */

@@ -13,11 +13,14 @@ class CandidatoController extends Controller
     /**
      * Display a listing of the resource.
      */
+    // candidatos/domain/
     public function index(Request $request, $domain_id)
     {
-        $candidatos = Candidato::with(['ciudad:id,nombre', 'distrito', 'distrito.province', 'distrito.department'])
+        // Obtener todos los candidatos filtrando por domain_id y cargando la relación con ciudad
+        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department', 'ciudad'])
             ->where('domain_id', $domain_id)
-            ->get(['id', 'code', 'nombre', 'ciudad_id', 'estado_actual']);
+            ->get();
+    
         return response()->json($candidatos, 200);
     }
 
@@ -86,7 +89,7 @@ class CandidatoController extends Controller
             'nombre' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
-            'puesto' => 'nullable|integer',
+            'puesto' => 'nullable|string|max:105',
             'date_birth' => 'nullable|date',
             'age' => 'nullable|integer',
             'education_degree_id' => 'nullable|integer',
@@ -179,18 +182,17 @@ class CandidatoController extends Controller
 
     public function getByCiudad($ciudad_id)
     {
-        // Buscar candidatos por ciudad_id e incluir solo el nombre de la ciudad
-        $candidatos = Candidato::with(['ciudad:id,nombre', 'distrito', 'distrito.province', 'distrito.department'])
+        // Buscar candidatos por ciudad_id e incluir la relación con ciudad
+        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department', 'ciudad'])
             ->where('ciudad_id', $ciudad_id)
-            ->get(['id', 'code', 'nombre', 'ciudad_id', 'estado_actual']); // Selecciona los campos que necesitas
-
+            ->get();
+    
         if ($candidatos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
         }
-
-        // Retornar los candidatos junto con solo el nombre de la ciudad
+    
         return response()->json($candidatos, 200);
-    }
+    }    
 
     public function countCandidatosByCiudad($ciudad_id)
     {
@@ -226,7 +228,7 @@ class CandidatoController extends Controller
             'nombre' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
-            'puesto' => 'nullable|integer',
+            'puesto' => 'nullable|string|max:105',
             'fecha_nacimiento' => 'nullable|date',
             'age' => 'nullable|integer',
             'education_degree_id' => 'nullable|integer',
