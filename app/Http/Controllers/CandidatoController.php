@@ -15,15 +15,12 @@ class CandidatoController extends Controller
      */
     public function index(Request $request, $domain_id)
     {
-        // Obtener todos los candidatos solo filtrando por domain_id
-        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department'])
+        $candidatos = Candidato::with(['ciudad:id,nombre', 'distrito', 'distrito.province', 'distrito.department'])
             ->where('domain_id', $domain_id)
-            ->get();
-        
+            ->get(['id', 'code', 'nombre', 'ciudad_id', 'estado_actual']);
         return response()->json($candidatos, 200);
     }
-    
-    
+
 
     public function getCiudadByCandidato($id)
     {
@@ -101,7 +98,7 @@ class CandidatoController extends Controller
             'estado_actual' => 'nullable|string|max:191',  // Modificado a string
             'domain_id' => 'required|integer|exists:domains,id',
             'ciudad_id' => 'nullable|integer|exists:ciudades,id',
-            'distrito_id' => 'nullable|string', 
+            'distrito_id' => 'nullable|string',
             'imagen' => 'nullable|string',
         ]);
 
@@ -133,7 +130,7 @@ class CandidatoController extends Controller
             'puesto' => $request->input('puesto'),
             'date_birth' => $request->input('fecha_nacimiento') ?: null,
             'age' => $request->input('age'),
-            'education_degree_id' => $request->input('education_degree_id')?: null,
+            'education_degree_id' => $request->input('education_degree_id') ?: null,
             'profesion' => $request->input('profesion'),  // Ahora es un string
             'ocupacion_actual' => $request->input('ocupacion_actual'),  // Ahora es un string
             'email' => $request->input('email'),
@@ -163,11 +160,11 @@ class CandidatoController extends Controller
     public function show($id)
     {
         // Buscar el candidato por su ID
-        $candidato = Candidato::with(['user','distrito.province', 'distrito.department'])->findOrFail($id);
-        
+        $candidato = Candidato::with(['user', 'distrito.province', 'distrito.department'])->findOrFail($id);
+
         // Obtener el usuario asociado al candidato
         $user = $candidato->user;
-        
+
         // Verificar si se encontr贸 el usuario
         if ($user) {
             // Devuelve los datos del candidato y un indicador de que hay una contrase帽a almacenada
@@ -179,31 +176,33 @@ class CandidatoController extends Controller
             return response()->json(['message' => 'Usuario no encontrado.'], 404);
         }
     }
-    
+
     public function getByCiudad($ciudad_id)
     {
-        // Buscar candidatos solo por ciudad_id sin incluir relaciones
-        $candidatos = Candidato::with(['distrito', 'distrito.province', 'distrito.department'])
+        // Buscar candidatos por ciudad_id e incluir solo el nombre de la ciudad
+        $candidatos = Candidato::with(['ciudad:id,nombre', 'distrito', 'distrito.province', 'distrito.department'])
             ->where('ciudad_id', $ciudad_id)
-            ->get();
+            ->get(['id', 'code', 'nombre', 'ciudad_id', 'estado_actual']); // Selecciona los campos que necesitas
 
         if ($candidatos->isEmpty()) {
             return response()->json(['message' => 'No se encontraron candidatos para la ciudad especificada.'], 404);
         }
 
+        // Retornar los candidatos junto con solo el nombre de la ciudad
         return response()->json($candidatos, 200);
     }
+
     public function countCandidatosByCiudad($ciudad_id)
     {
         // Contar la cantidad de candidatos en la ciudad especificada
         $cantidadCandidatos = Candidato::where('ciudad_id', $ciudad_id)->count();
-    
+
         return response()->json([
             'ciudad_id' => $ciudad_id,
             'cantidadCandidatos' => $cantidadCandidatos,
         ]);
     }
-    
+
     public function showByUser($id)
     {
         $candidato = Candidato::where('user_id', $id)->first();
@@ -223,7 +222,7 @@ class CandidatoController extends Controller
             'code' => 'nullable|string|max:100',
             'identification_document_id' => 'nullable|integer',
             'apaterno' => 'nullable|string|max:100',
-            'amaterno' => 'nullable|string|max:100',            
+            'amaterno' => 'nullable|string|max:100',
             'nombre' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
             'marital_status_id' => 'nullable|integer',
@@ -242,13 +241,13 @@ class CandidatoController extends Controller
             'imagen' => 'nullable|string',
             'distrito_id' => 'nullable|string',
         ]);
-        
+
         $candidato = Candidato::findOrFail($id);
-        
+
         // Obtener los datos actuales del candidato
         $candidatoData = $candidato->toArray();
         $user = $candidato->user;
-        
+
         // Actualizar solo los campos proporcionados en el modelo `Candidato`
         $candidato->update(array_filter([
             'position_code' => $data['position_code'] ?? $candidatoData['position_code'],
@@ -275,47 +274,46 @@ class CandidatoController extends Controller
             'image' => $data['imagen'] ?? $candidatoData['image'],
             'distrito_id' => $data['distrito_id'] ?? $candidatoData['distrito_id'],
         ]));
-        
+
         // Actualizar el modelo `User` asociado si se proporcionan cambios
         if ($user) {
             // Actualizar la contrase帽a solo si se proporciona una nueva
             if (!empty($data['password'])) {
                 $user->password = Hash::make($data['password']);
             }
-            
+
             // Actualizar otros campos del usuario si es necesario
             $user->email = $data['email'] ?? $user->email;
             $user->name = $data['nombre'] ?? $user->name;
-            
+
             // Guardar los cambios en el usuario
             $user->save();
         }
-    
+
         return response()->json(['message' => 'Candidato actualizado correctamente', 'data' => $candidato], 200);
     }
-    
-    
+
+
     /**
      * Remove the specified resource from storage.
      */
     public function destroy($id)
     {
         $candidato = Candidato::find($id);
-    
+
         if (!$candidato) {
             return response()->json(['message' => 'Candidato no encontrado'], 404);
         }
-    
+
         // Buscar y eliminar el usuario asociado al candidato
         $user = \App\Models\User::find($candidato->user_id);
         if ($user) {
             $user->forceDelete();
         }
-    
+
         // Eliminar el candidato
         $candidato->forceDelete();
-    
+
         return response()->json(['message' => 'Candidato y usuario eliminados correctamente'], 204);
     }
-    
 }
