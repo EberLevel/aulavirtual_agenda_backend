@@ -163,7 +163,7 @@ class CandidatoController extends Controller
     public function show($id)
     {
         // Buscar el candidato por su ID
-        $candidato = Candidato::with(['user', 'distrito.province', 'distrito.department'])->findOrFail($id);
+        $candidato = Candidato::with(['user', 'distrito.province', 'distrito.department','ciudad'])->findOrFail($id);
 
         // Obtener el usuario asociado al candidato
         $user = $candidato->user;
